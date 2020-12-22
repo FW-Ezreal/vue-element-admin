@@ -44,8 +44,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
-
+const json = '[{"id":"510000200005234495","title":"Mmh fppp ucrqjp vvspx mwj vxermqjtq idvutgumhw tnupd kpepilxn qunfrmu ssfnwif ekwruiq iqsvfftm wuxym ouvpxedyst knefxoyy oarqbphet mfxifm cagx.","status":"published","author":"name","display_time":"1976-10-23 01:29:18","pageviews":793},{"id":"130000197505227755","title":"Biibuwf fdsg vcxhcc ekinb cbmtk hlpwsps qvmdiyv nvbjwcpc qbynwhox frlvdgv xoaijvwts vgentto gkbkuvnu tskguaasc oyt odbe.","status":"published","author":"name","display_time":"1975-11-04 06:15:58","pageviews":3551},{"id":"45000020110308146X","title":"Cxlpdhzc qtaufx llkqst nlfqosb nyqhws fbduw gxtimy dsvdlqpp pfmshf hhpbrg.","status":"draft","author":"name","display_time":"1976-07-16 18:24:04","pageviews":760},{"id":"220000200210076482","title":"Wswco qfhffu cmvj qxiv lddylzdb hqbmsboqp fojqgih uvqzfc dftjilveo ytwcdxlb bxnn lfvf.","status":"draft","author":"name","display_time":"2000-07-28 10:25:35","pageviews":1106},{"id":"640000197507301111","title":"Wstu hahaiqkg jpifoqo bkmhpds gfjnk zyoyi rlxcb cpjddjk ktfz xqoqsj yotjulk ujiwc abithlxmte unhfhsp fovmq.","status":"draft","author":"name","display_time":"1978-03-23 17:51:31","pageviews":4540}]'
 export default {
   filters: {
     statusFilter(status) {
@@ -68,11 +67,11 @@ export default {
   },
   methods: {
     fetchData() {
-      this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
+      this.listLoading = true;
+      setTimeout(() => {
+        this.list = JSON.parse(json);
         this.listLoading = false
-      })
+      }, 500);
     }
   }
 }

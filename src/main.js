@@ -15,18 +15,20 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
-/**
- * If you don't want to use mock-server
- * you want to use MockJs for mock api
- * you can execute: mockXHR()
- *
- * Currently MockJs will be used in the production environment,
- * please remove it before going online ! ! !
- */
-if (process.env.NODE_ENV === 'production') {
-  const { mockXHR } = require('../mock')
-  mockXHR()
-}
+import { get, post, put, deleteAxios } from './utils/request'
+
+import _ from 'lodash'
+window._ = _
+
+Vue.prototype.$get = get
+Vue.prototype.$post = post
+Vue.prototype.$put = put
+Vue.prototype.$deleteAxios = deleteAxios
+
+Vue.prototype.rrouter = router
+Vue.prototype.sstore = store
+
+Vue.prototype.sstore.dispatch('checkSession');
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })

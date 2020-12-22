@@ -1,0 +1,127 @@
+variables:
+  DOCKER_REGISTRY: docker-registry.kuwo-inc.com
+  CONTAINER_PORT: 8001
+  FAT_PORT: 10812
+  FAT_DOCKER_LAUNCH_ARGS: ''
+  CONTAINER_NAME: '${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}'
+  UAT_VHOST: ugc-setting.kuwo-inc.com
+  PRO_VHOST: ugc-setting.oop.kuwo-inc.com
+
+before_script:
+  - echo $CONTAINER_NAME
+  - echo "ready to start! " $(date +'%Y-%m-%d %H:%M:%S')
+  - pwd
+
+stages:
+  - build_fat
+  - deploy_fat
+  - build_uat
+  - deploy_uat
+  - build_pro
+  - deploy_pro
+
+build_fat:
+  stage: build_fat
+  tags:
+    - docker
+    - build
+  only:
+    - develop
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start building..."
+    - docker build --build-arg buildtime_env=fat -t ${DOCKER_REGISTRY}/${CONTAINER_NAME}:fat .
+    - docker push ${DOCKER_REGISTRY}/${CONTAINER_NAME}:fat
+
+deploy_fat:
+  stage: deploy_fat
+  tags:
+    - ssh
+    - docker
+    - deploy
+    - test
+  only:
+    - develop
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start deploying..."
+    - docker pull ${DOCKER_REGISTRY}/${CONTAINER_NAME}:fat
+    - (docker stop ${CI_PROJECT_NAME}.fat || true) && (docker container rm ${CI_PROJECT_NAME}.fat || true)
+    - docker run -dit -e PROJECT_NAME=${CI_PROJECT_NAME} -e HOST_HOSTNAME=`hostname` -p ${FAT_PORT}:${CONTAINER_PORT} ${FAT_DOCKER_LAUNCH_ARGS} --restart=always --name=${CI_PROJECT_NAME}.fat ${DOCKER_REGISTRY}/${CONTAINER_NAME}:fat
+
+build_uat:
+  stage: build_uat
+  tags:
+    - docker
+    - build
+  only:
+    - master
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start building..."
+    - docker build --build-arg buildtime_env=prod -t ${DOCKER_REGISTRY}/${CONTAINER_NAME}:uat .
+    - docker push ${DOCKER_REGISTRY}/${CONTAINER_NAME}:uat
+
+deploy_uat:
+  stage: deploy_uat
+  tags:
+    - ssh
+    - deploy
+    - production
+    - kubernetes
+  only:
+    - master
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start deploying..."
+    - sed "s:{{ENVIRONMENT}}:prod:g" -i .deployment.yml
+    - sed "s:{{RS_COUNT}}:1:g" -i .deployment.yml
+    - sed "s:{{APP_NAME}}:${CONTAINER_NAME}-uat:g" -i .deployment.yml
+    - sed "s:{{PROJECT_NAME}}:${CONTAINER_NAME}:g" -i .deployment.yml
+    - sed "s:{{TAG}}:uat:g" -i .deployment.yml
+    - sed "s:{{CONTAINER_PORT}}:${CONTAINER_PORT}:g" -i .deployment.yml
+    - sed "s:{{VHOST}}:${UAT_VHOST}:g" -i .deployment.yml
+    - cat .deployment.yml
+    - kubectl apply -f .deployment.yml && kubectl rollout restart deployment "${CONTAINER_NAME}-uat" -n site
+    - echo 'Done'
+
+build_pro:
+  stage: build_pro
+  tags:
+    - docker
+    - build
+  only:
+    - tags
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start building..."
+    - docker pull ${DOCKER_REGISTRY}/${CONTAINER_NAME}:${CI_COMMIT_TAG} || docker tag ${DOCKER_REGISTRY}/${CONTAINER_NAME}:uat ${DOCKER_REGISTRY}/${CONTAINER_NAME}:${CI_COMMIT_TAG}
+    - docker push ${DOCKER_REGISTRY}/${CONTAINER_NAME}:${CI_COMMIT_TAG}
+
+deploy_pro:
+  stage: deploy_pro
+  tags:
+    - ssh
+    - deploy
+    - production
+    - kubernetes
+  only:
+    - tags
+  script:
+    - echo $CI_JOB_STAGE
+    - echo "start deploying..."
+    - sed "s:{{ENVIRONMENT}}:prod:g" -i .deployment.yml
+    - sed "s:{{RS_COUNT}}:3:g" -i .deployment.yml
+    - sed "s:{{APP_NAME}}:${CONTAINER_NAME}-pro:g" -i .deployment.yml
+    - sed "s:{{PROJECT_NAME}}:${CONTAINER_NAME}:g" -i .deployment.yml
+    - sed "s:{{TAG}}:${CI_COMMIT_TAG}:g" -i .deployment.yml
+    - sed "s:{{CONTAINER_PORT}}:${CONTAINER_PORT}:g" -i .deployment.yml
+    - sed "s:{{VHOST}}:${PRO_VHOST}:g" -i .deployment.yml
+    - cat .deployment.yml
+    - kubectl apply -f .deployment.yml -n site
+    - echo 'Done'
+
+after_script:
+  - echo $CONTAINER_NAME
+  - echo "Done! " $(date +'%Y-%m-%d %H:%M:%S')
+

@@ -20,7 +20,6 @@ const actions = {
       const redirectUrl = process.env.VUE_APP_redirectUrl // 必要参数，而且会对授权域名进行校验
       const callbackUrl = process.env.VUE_APP_callbackUrl // 该参数不是必要
       const url = `http://ucenter.kuwo-inc.com/authorize?appid=${appid}&redirectUrl=${redirectUrl}&callbackUrl=${callbackUrl}`
-      // console.log(process.env, url)
       window.location.href = url
     }
   },

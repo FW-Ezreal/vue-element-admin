@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{APP_NAME}}
+  namespace: site
+spec:
+  replicas: {{RS_COUNT}}
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: {{APP_NAME}}
+  template:
+    metadata:
+      name: {{APP_NAME}}
+      labels:
+        app: {{APP_NAME}}
+    spec:
+      containers:
+        - name: {{APP_NAME}}
+          image: docker-registry.kuwo-inc.com/{{PROJECT_NAME}}:{{TAG}}
+          imagePullPolicy: Always
+          ports:
+            - name: liveness-port
+              containerPort: {{CONTAINER_PORT}}
+          env:
+            - name: ENVIRONMENT
+              value: {{ENVIRONMENT}}
+            - name: RUN_ON
+              value: kubernetes
+      imagePullSecrets:
+        - name: docker-registry.kuwo-inc.com
+      nodeSelector:
+        node-role.kubernetes.io/webserver: "true"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{APP_NAME}}
+  namespace: site
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: {{CONTAINER_PORT}}
+  selector:
+    app: {{APP_NAME}}
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{APP_NAME}}
+  namespace: site
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`{{VHOST}}`)
+      kind: Rule
+      priority: 12
+      services:
+        - name: {{APP_NAME}}
+          port: 80

@@ -1,11 +1,11 @@
 variables:
   DOCKER_REGISTRY: docker-registry.kuwo-inc.com
   CONTAINER_PORT: 8001
-  FAT_PORT: 10812
+  FAT_PORT: 10814
   FAT_DOCKER_LAUNCH_ARGS: ''
   CONTAINER_NAME: '${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}'
-  UAT_VHOST: ugc-setting.kuwo-inc.com
-  PRO_VHOST: ugc-setting.oop.kuwo-inc.com
+  UAT_VHOST: test-admin.kuwo-inc.com
+  PRO_VHOST: test-admin.oop.kuwo-inc.com
 
 before_script:
   - echo $CONTAINER_NAME

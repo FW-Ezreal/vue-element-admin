@@ -37,6 +37,10 @@ module.exports = {
       '/openapi/*': {
         target: 'http://test-wapi.kuwo.cn', //对应自己的接口
         changeOrigin: true,
+      },
+      '/api/sessionInfo/*': {
+        target: 'http://ucenter.kuwo-inc.com', //对应自己的接口
+        changeOrigin: true,
       }
     }
   },

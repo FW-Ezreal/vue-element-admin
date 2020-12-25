@@ -64,9 +64,10 @@ export const get = (url, params, config = {defaultMsg: true}) => {
         }
         resolve(res.data)
       } else {
-        Vue.prototype.rrouter.push('/error')
+        
       }
     }).catch(error => {
+      console.log('', 'color: #00ff88', error);
       Vue.prototype.$message.error( error.msg || '请求失败，请稍后再试~');
       reject(error)
     })

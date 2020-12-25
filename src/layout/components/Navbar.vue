@@ -7,12 +7,12 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="userInfo.headPic ||'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80'" class="user-avatar">
+          <img :src="userInfo.headPic || userInfo.avatar ||'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif?imageView2/1/w/80/h/80'" class="user-avatar">
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <el-dropdown-item>{{ userInfo.username || '伊泽瑞尔' }}</el-dropdown-item>
-          <el-dropdown-item>{{ userInfo.email || xxx.kuwo.cn }}</el-dropdown-item>
+          <el-dropdown-item>{{ userInfo.username || userInfo.name || '伊泽瑞尔' }}</el-dropdown-item>
+          <el-dropdown-item>{{ userInfo.email || 'xxx.kuwo.cn' }}</el-dropdown-item>
           <router-link to="/">
             <el-dropdown-item>
               Home
@@ -28,9 +28,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import { watermark } from '@/utils/utils';
 
 export default {
   components: {
@@ -42,6 +43,12 @@ export default {
       'sidebar',
       'userInfo'
     ])
+  },
+  mounted() {
+    const name = this.userInfo.username || this.userInfo.name
+    if (name) {
+      watermark(name)
+    }
   },
   methods: {
     toggleSideBar() {

@@ -32,7 +32,18 @@ const actions = {
     if (res.code === 200) {
       state.commit('setUserInfo', res.data)
     }
+  },
+  async checkLogin (state) {
+    const resData = await get(`/api/sessionInfo`);
+    if (resData.code === 200) {
+      state.commit('setUserInfo', resData.data);
+      return resData.data;
+    } else {
+      const redirectUrl = encodeURIComponent(window.location.href);
+      window.location.href = `http://ucenter.kuwo-inc.com/login?redirectUrl=${redirectUrl}`;
+    }
   }
+
 }
 
 export default {

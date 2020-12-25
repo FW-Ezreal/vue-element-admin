@@ -24,10 +24,6 @@ Vue.prototype.$post = post
 Vue.prototype.$put = put
 Vue.prototype.$deleteAxios = deleteAxios
 
-Vue.prototype.rrouter = router
-Vue.prototype.sstore = store
-
-Vue.prototype.sstore.dispatch('checkSession');
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { size: 'small'})
